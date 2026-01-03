@@ -9,7 +9,10 @@ function uniq(arr) {
 }
 
 async function getActiveTabHost() {
-  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    lastFocusedWindow: true,
+  });
   const url = tab?.url || "";
   try {
     return new URL(url).host;
@@ -33,7 +36,6 @@ function defaultSiteRules() {
   return {
     includePhrases: [],
     excludePhrases: [],
-    itemSelector: ""
   };
 }
 
@@ -74,20 +76,20 @@ async function refreshUI(host) {
   const rulesByHost = await loadAllRules();
   const siteRules = rulesByHost[host] || defaultSiteRules();
 
-  document.getElementById("itemSelectorInput").value = siteRules.itemSelector || "";
-
   renderPhraseList({
     ul: document.getElementById("includeList"),
     phrases: siteRules.includePhrases || [],
     onRemove: async (phrase) => {
       const all = await loadAllRules();
       const current = all[host] || defaultSiteRules();
-      current.includePhrases = (current.includePhrases || []).filter((p) => p !== phrase);
+      current.includePhrases = (current.includePhrases || []).filter(
+        (p) => p !== phrase,
+      );
       all[host] = current;
       await saveAllRules(all);
       setStatus("Updated include list");
       await refreshUI(host);
-    }
+    },
   });
 
   renderPhraseList({
@@ -96,17 +98,22 @@ async function refreshUI(host) {
     onRemove: async (phrase) => {
       const all = await loadAllRules();
       const current = all[host] || defaultSiteRules();
-      current.excludePhrases = (current.excludePhrases || []).filter((p) => p !== phrase);
+      current.excludePhrases = (current.excludePhrases || []).filter(
+        (p) => p !== phrase,
+      );
       all[host] = current;
       await saveAllRules(all);
       setStatus("Updated exclude list");
       await refreshUI(host);
-    }
+    },
   });
 
   const includeCount = (siteRules.includePhrases || []).length;
   const excludeCount = (siteRules.excludePhrases || []).length;
-  if (host) setStatus(`Saved for ${host}: ${includeCount} include, ${excludeCount} exclude`);
+  if (host)
+    setStatus(
+      `Saved for ${host}: ${includeCount} include, ${excludeCount} exclude`,
+    );
 }
 
 async function addPhrase({ host, kind }) {
@@ -124,9 +131,15 @@ async function addPhrase({ host, kind }) {
   const siteRules = rulesByHost[host] || defaultSiteRules();
 
   if (kind === "include") {
-    siteRules.includePhrases = uniq([...(siteRules.includePhrases || []), phrase]);
+    siteRules.includePhrases = uniq([
+      ...(siteRules.includePhrases || []),
+      phrase,
+    ]);
   } else {
-    siteRules.excludePhrases = uniq([...(siteRules.excludePhrases || []), phrase]);
+    siteRules.excludePhrases = uniq([
+      ...(siteRules.excludePhrases || []),
+      phrase,
+    ]);
   }
 
   rulesByHost[host] = siteRules;
@@ -134,24 +147,6 @@ async function addPhrase({ host, kind }) {
 
   input.value = "";
   setStatus(`Added to ${kind} list`);
-  await refreshUI(host);
-}
-
-async function saveSelector({ host }) {
-  if (!host) {
-    setStatus("No active tab hostname found");
-    return;
-  }
-
-  const selector = normalizePhrase(document.getElementById("itemSelectorInput").value);
-
-  const rulesByHost = await loadAllRules();
-  const siteRules = rulesByHost[host] || defaultSiteRules();
-  siteRules.itemSelector = selector;
-  rulesByHost[host] = siteRules;
-
-  await saveAllRules(rulesByHost);
-  setStatus("Saved selector");
   await refreshUI(host);
 }
 
@@ -186,10 +181,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   document.getElementById("excludeInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") addPhrase({ host, kind: "exclude" });
-  });
-
-  document.getElementById("saveSelectorBtn").addEventListener("click", () => {
-    saveSelector({ host });
   });
 
   document.getElementById("resetSiteBtn").addEventListener("click", () => {

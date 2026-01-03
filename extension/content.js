@@ -3,6 +3,8 @@
 // Applies include/exclude phrase filtering based on each item's <h4> text:
 // - include phrase match => highlight the card
 // - exclude phrase match => hide the card entirely
+//
+// Item card selection is hard-coded per host (no user-provided selectors).
 
 const STORAGE_KEY = "phraseFilterRulesByHost";
 
@@ -10,10 +12,44 @@ const HIGHLIGHT_ATTR = "data-phrasefilter-highlight";
 const HIDDEN_ATTR = "data-phrasefilter-hidden";
 
 /**
+ * Hard-coded per-host item selectors.
+ *
+ * Notes:
+ * - Keys are registrable domains (e.g. "bidfta.com"), and matching supports subdomains.
+ * - Values must select the listing/card root elements (the "cards") that contain the title.
+ *
+ * Add/adjust selectors here as new auction sites are supported.
+ */
+const ITEM_SELECTOR_BY_DOMAIN = {
+  // BidFTA: card container has role="button" and a stable aria-label in our observed DOM.
+  "bidfta.com":
+    'div[role="button"][aria-label="Click to navigate to item details"]',
+
+  // GovDeals: listing card root is a Bootstrap-ish card used in search results.
+  // Your provided sample outer element: <div class="card card-search card-search-minh ...">...</div>
+  "govdeals.com": "div.card.card-search",
+};
+
+const DEFAULT_ITEM_SELECTOR =
+  'div[role="button"][aria-label="Click to navigate to item details"]';
+
+/**
+ * Hard-coded per-host title selectors.
+ *
+ * Values must select an element within the card whose text (or title attr) contains the listing title.
+ */
+const TITLE_SELECTOR_BY_DOMAIN = {
+  // BidFTA: title is inside an <h4 ...>Title</h4> within the card.
+  "bidfta.com": "h4",
+
+  // GovDeals: title is inside <p class=\"card-title\"><a ...>Title</a></p>.
+  "govdeals.com": ".card-title a, .card-title",
+};
+
+/**
  * @typedef {Object} SiteRules
  * @property {string[]} [includePhrases]
  * @property {string[]} [excludePhrases]
- * @property {string}   [itemSelector]
  */
 
 /**
@@ -23,7 +59,6 @@ function defaultSiteRules() {
   return {
     includePhrases: [],
     excludePhrases: [],
-    itemSelector: ""
   };
 }
 
@@ -33,6 +68,43 @@ function safeHostFromLocation() {
   } catch {
     return "";
   }
+}
+
+/**
+ * @param {string} host
+ * @param {string} domain
+ */
+function hostMatchesDomain(host, domain) {
+  if (!host || !domain) return false;
+  return host === domain || host.endsWith(`.${domain}`);
+}
+
+/**
+ * Get the hard-coded item selector for a host (supports subdomains).
+ * Falls back to DEFAULT_ITEM_SELECTOR if no mapping exists or the mapping is blank.
+ * @param {string} host
+ */
+function getItemSelectorForHost(host) {
+  for (const [domain, selector] of Object.entries(ITEM_SELECTOR_BY_DOMAIN)) {
+    if (!hostMatchesDomain(host, domain)) continue;
+    const trimmed = (selector || "").trim();
+    if (trimmed) return trimmed;
+    break;
+  }
+  return DEFAULT_ITEM_SELECTOR;
+}
+
+/**
+ * Get the hard-coded title selector for a host (supports subdomains).
+ * Returns "" if no mapping exists or the mapping is blank.
+ * @param {string} host
+ */
+function getTitleSelectorForHost(host) {
+  for (const [domain, selector] of Object.entries(TITLE_SELECTOR_BY_DOMAIN)) {
+    if (!hostMatchesDomain(host, domain)) continue;
+    return (selector || "").trim();
+  }
+  return "";
 }
 
 async function loadRulesByHost() {
@@ -94,22 +166,27 @@ function injectHighlightCssOnce() {
 }
 
 /**
- * Attempt to find the title element inside a card.
- * For bidfta cards, the title is in a <h4 ... title="...">...</h4>.
+ * Attempt to find the title element inside a card for the current host.
+ * This is strict-by-host (no cross-site fallback).
+ * @param {string} host
  * @param {Element} card
- * @returns {HTMLHeadingElement|null}
+ * @returns {HTMLElement|null}
  */
-function findTitleH4(card) {
-  const h4 = card.querySelector("h4");
-  if (!h4) return null;
-  return /** @type {HTMLHeadingElement} */ (h4);
+function findTitleElementForHost(host, card) {
+  const titleSelector = getTitleSelectorForHost(host);
+  if (!titleSelector) return null;
+
+  const el = card.querySelector(titleSelector);
+  if (!el) return null;
+
+  return /** @type {HTMLElement} */ (el);
 }
 
 function getTitleTextFromCard(card) {
-  const h4 = findTitleH4(card);
-  if (!h4) return "";
+  const titleEl = findTitleElementForHost(currentHost, card);
+  if (!titleEl) return "";
   // Prefer visible text; fall back to title attribute.
-  return (h4.textContent || h4.getAttribute("title") || "").trim();
+  return (titleEl.textContent || titleEl.getAttribute("title") || "").trim();
 }
 
 function setHidden(card, shouldHide) {
@@ -169,23 +246,17 @@ function applyRulesToCard(card, rules) {
 function applyRulesToPage(rules) {
   injectHighlightCssOnce();
 
-  const selector = (rules.itemSelector || "").trim();
-
-  // If no selector is configured, attempt a reasonable default for bidfta-like cards:
-  // The card container in the example has role="button" and aria-label="Click to navigate to item details".
-  const effectiveSelector =
-    selector ||
-    'div[role="button"][aria-label="Click to navigate to item details"]';
+  const effectiveSelector = getItemSelectorForHost(currentHost);
 
   const cards = Array.from(document.querySelectorAll(effectiveSelector));
   for (const card of cards) applyRulesToCard(card, rules);
 
   log("Applied rules", {
     host: currentHost,
-    itemSelector: effectiveSelector,
+    effectiveSelector,
     cardsSeen: cards.length,
     includeCount: (rules.includePhrases || []).length,
-    excludeCount: (rules.excludePhrases || []).length
+    excludeCount: (rules.excludePhrases || []).length,
   });
 }
 
@@ -210,7 +281,7 @@ function startObserver(rules) {
 
   observer.observe(document.documentElement, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 
   return observer;
@@ -248,7 +319,9 @@ async function init() {
     if (!changed) return;
 
     const nextRulesByHost =
-      changed.newValue && typeof changed.newValue === "object" ? changed.newValue : {};
+      changed.newValue && typeof changed.newValue === "object"
+        ? changed.newValue
+        : {};
 
     const nextSiteRules = nextRulesByHost[currentHost] || null;
     currentRules = { ...defaultSiteRules(), ...(nextSiteRules || {}) };

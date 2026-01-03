@@ -8,7 +8,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://www.bidfta.com/*"
+    "https://www.bidfta.com/*",
+    "https://www.govdeals.com/*"
   ],
   "action": {
     "default_title": "Phrase Filter",
@@ -17,7 +18,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.bidfta.com/*"
+        "https://www.bidfta.com/*",
+        "https://www.govdeals.com/*"
       ],
       "js": [
         "content.js"

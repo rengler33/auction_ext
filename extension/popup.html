@@ -22,7 +22,13 @@
         margin: 0;
         padding: 12px;
         width: 360px;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
           sans-serif;
         background: var(--bg);
         color: var(--fg);
@@ -161,7 +167,7 @@
     </header>
 
     <div class="card">
-      <h2>Interested (highlight later)</h2>
+      <h2>Interested</h2>
       <div class="row">
         <input
           id="includeInput"
@@ -172,13 +178,15 @@
         <button class="primary" id="addIncludeBtn" type="button">Add</button>
       </div>
       <ul id="includeList"></ul>
+      <!--
       <div class="meta" style="margin-top: 8px">
         Stored per-site for the hostname shown above.
       </div>
+      -->
     </div>
 
     <div class="card">
-      <h2>Not interested (hide later)</h2>
+      <h2>Not interested</h2>
       <div class="row">
         <input
           id="excludeInput"
@@ -189,27 +197,12 @@
         <button class="primary" id="addExcludeBtn" type="button">Add</button>
       </div>
       <ul id="excludeList"></ul>
+      <!--
       <div class="meta" style="margin-top: 8px">
         If a phrase matches both lists, “not interested” should win (we’ll wire
         that logic later).
       </div>
-    </div>
-
-    <div class="card">
-      <h2>Site configuration (optional)</h2>
-      <div class="row">
-        <input
-          id="itemSelectorInput"
-          type="text"
-          placeholder="Item selector (CSS)"
-          autocomplete="off"
-        />
-        <button id="saveSelectorBtn" type="button">Save</button>
-      </div>
-      <div class="meta" style="margin-top: 8px">
-        This will let you target the listing/card root element per site. We can
-        set the BidFTA selector once we inspect the DOM.
-      </div>
+      -->
     </div>
 
     <div class="footer">
