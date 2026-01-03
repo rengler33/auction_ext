@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self'; object-src 'self';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phrase Filter</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --accent: #2563eb;
+        --danger: #dc2626;
+      }
+
+      body {
+        margin: 0;
+        padding: 12px;
+        width: 360px;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+      }
+
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      h1 {
+        font-size: 14px;
+        margin: 0;
+      }
+
+      .host {
+        font-size: 12px;
+        color: var(--muted);
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      h2 {
+        font-size: 13px;
+        margin: 0 0 8px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+      }
+
+      input[type="text"]:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+
+      button {
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      button.primary {
+        border-color: rgba(37, 99, 235, 0.25);
+        background: rgba(37, 99, 235, 0.08);
+      }
+
+      button.danger {
+        border-color: rgba(220, 38, 38, 0.25);
+        background: rgba(220, 38, 38, 0.08);
+        color: var(--danger);
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0;
+        display: grid;
+        gap: 6px;
+      }
+
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .phrase {
+        font-size: 13px;
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+      }
+
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Phrase Filter</h1>
+      <div class="host" id="hostLabel" title="Current site">(loading…)</div>
+    </header>
+
+    <div class="card">
+      <h2>Interested (highlight later)</h2>
+      <div class="row">
+        <input
+          id="includeInput"
+          type="text"
+          placeholder="Add phrase (e.g. “dewalt”)"
+          autocomplete="off"
+        />
+        <button class="primary" id="addIncludeBtn" type="button">Add</button>
+      </div>
+      <ul id="includeList"></ul>
+      <div class="meta" style="margin-top: 8px">
+        Stored per-site for the hostname shown above.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Not interested (hide later)</h2>
+      <div class="row">
+        <input
+          id="excludeInput"
+          type="text"
+          placeholder="Add phrase (e.g. “broken”)"
+          autocomplete="off"
+        />
+        <button class="primary" id="addExcludeBtn" type="button">Add</button>
+      </div>
+      <ul id="excludeList"></ul>
+      <div class="meta" style="margin-top: 8px">
+        If a phrase matches both lists, “not interested” should win (we’ll wire
+        that logic later).
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Site configuration (optional)</h2>
+      <div class="row">
+        <input
+          id="itemSelectorInput"
+          type="text"
+          placeholder="Item selector (CSS)"
+          autocomplete="off"
+        />
+        <button id="saveSelectorBtn" type="button">Save</button>
+      </div>
+      <div class="meta" style="margin-top: 8px">
+        This will let you target the listing/card root element per site. We can
+        set the BidFTA selector once we inspect the DOM.
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="status" id="statusLabel"></div>
+      <button class="danger" id="resetSiteBtn" type="button">Reset site</button>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

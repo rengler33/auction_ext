@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Phrase Filter (Scaffold)",
+  "version": "0.1.0",
+  "description": "Per-site phrase lists to filter/highlight listing cards (scaffold).",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.bidfta.com/*"
+  ],
+  "action": {
+    "default_title": "Phrase Filter",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bidfta.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
