@@ -56,6 +56,41 @@
         white-space: nowrap;
       }
 
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin: 0 0 10px;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #f9fafb;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .tab[aria-selected="true"] {
+        background: #ffffff;
+        border-color: var(--border);
+        box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
+      }
+
+      .tabpanels {
+        display: block;
+      }
+
+      .tabpanel[hidden] {
+        display: none;
+      }
+
       .card {
         border: 1px solid var(--border);
         border-radius: 10px;
@@ -166,43 +201,121 @@
       <div class="host" id="hostLabel" title="Current site">(loading…)</div>
     </header>
 
-    <div class="card">
-      <h2>Interested</h2>
-      <div class="row">
-        <input
-          id="includeInput"
-          type="text"
-          placeholder="Add phrase (e.g. “dewalt”)"
-          autocomplete="off"
-        />
-        <button class="primary" id="addIncludeBtn" type="button">Add</button>
-      </div>
-      <ul id="includeList"></ul>
-      <!--
-      <div class="meta" style="margin-top: 8px">
-        Stored per-site for the hostname shown above.
-      </div>
-      -->
+    <div class="tabs" role="tablist" aria-label="Popup tabs">
+      <button
+        class="tab"
+        id="tabMain"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        aria-controls="panelMain"
+      >
+        Add
+      </button>
+      <button
+        class="tab"
+        id="tabInterested"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panelInterested"
+      >
+        Interested
+      </button>
+      <button
+        class="tab"
+        id="tabNotInterested"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panelNotInterested"
+      >
+        Not interested
+      </button>
     </div>
 
-    <div class="card">
-      <h2>Not interested</h2>
-      <div class="row">
-        <input
-          id="excludeInput"
-          type="text"
-          placeholder="Add phrase (e.g. “broken”)"
-          autocomplete="off"
-        />
-        <button class="primary" id="addExcludeBtn" type="button">Add</button>
-      </div>
-      <ul id="excludeList"></ul>
-      <!--
-      <div class="meta" style="margin-top: 8px">
-        If a phrase matches both lists, “not interested” should win (we’ll wire
-        that logic later).
-      </div>
-      -->
+    <div class="tabpanels">
+      <section class="tabpanel" id="panelMain" role="tabpanel">
+        <div class="card">
+          <h2>Interested</h2>
+          <div class="row">
+            <input
+              id="includeInput"
+              type="text"
+              placeholder="Add phrase (e.g. “dewalt”)"
+              autocomplete="off"
+            />
+            <button class="primary" id="addIncludeBtn" type="button">Add</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Not interested</h2>
+          <div class="row">
+            <input
+              id="excludeInput"
+              type="text"
+              placeholder="Add phrase (e.g. “broken”)"
+              autocomplete="off"
+            />
+            <button class="primary" id="addExcludeBtn" type="button">Add</button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="tabpanel"
+        id="panelInterested"
+        role="tabpanel"
+        hidden
+      >
+        <div class="card">
+          <h2>Interested</h2>
+          <div class="row">
+            <input
+              id="includeInputTab"
+              type="text"
+              placeholder="Add phrase (e.g. “dewalt”)"
+              autocomplete="off"
+            />
+            <button class="primary" id="addIncludeBtnTab" type="button">
+              Add
+            </button>
+          </div>
+
+          <ul id="includeList"></ul>
+          <div class="meta" style="margin-top: 8px">
+            Add/remove phrases from the interested list for the current site.
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="tabpanel"
+        id="panelNotInterested"
+        role="tabpanel"
+        hidden
+      >
+        <div class="card">
+          <h2>Not interested</h2>
+          <div class="row">
+            <input
+              id="excludeInputTab"
+              type="text"
+              placeholder="Add phrase (e.g. “broken”)"
+              autocomplete="off"
+            />
+            <button class="primary" id="addExcludeBtnTab" type="button">
+              Add
+            </button>
+          </div>
+
+          <ul id="excludeList"></ul>
+          <div class="meta" style="margin-top: 8px">
+            Add/remove phrases from the not interested list for the current site.
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="footer">

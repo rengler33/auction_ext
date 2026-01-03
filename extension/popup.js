@@ -8,6 +8,24 @@ function uniq(arr) {
   return Array.from(new Set(arr));
 }
 
+function setActiveTab(tabId) {
+  const tabIds = ["tabMain", "tabInterested", "tabNotInterested"];
+  const panelIds = ["panelMain", "panelInterested", "panelNotInterested"];
+
+  for (const id of tabIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.setAttribute("aria-selected", id === tabId ? "true" : "false");
+  }
+
+  for (const id of panelIds) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.hidden =
+      id !== document.getElementById(tabId)?.getAttribute("aria-controls");
+  }
+}
+
 async function getActiveTabHost() {
   const [tab] = await chrome.tabs.query({
     active: true,
@@ -116,9 +134,15 @@ async function refreshUI(host) {
     );
 }
 
-async function addPhrase({ host, kind }) {
-  const inputId = kind === "include" ? "includeInput" : "excludeInput";
+async function addPhrase({ host, kind, inputIdOverride }) {
+  const inputId =
+    inputIdOverride || (kind === "include" ? "includeInput" : "excludeInput");
   const input = document.getElementById(inputId);
+
+  if (!input) {
+    setStatus(`Missing input: ${inputId}`);
+    return;
+  }
 
   const phrase = normalizePhrase(input.value);
   if (!host) {
@@ -169,6 +193,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const host = await getActiveTabHost();
   await refreshUI(host);
 
+  const tabMain = document.getElementById("tabMain");
+  const tabInterested = document.getElementById("tabInterested");
+  const tabNotInterested = document.getElementById("tabNotInterested");
+
+  if (tabMain) tabMain.addEventListener("click", () => setActiveTab("tabMain"));
+  if (tabInterested)
+    tabInterested.addEventListener("click", () =>
+      setActiveTab("tabInterested"),
+    );
+  if (tabNotInterested)
+    tabNotInterested.addEventListener("click", () =>
+      setActiveTab("tabNotInterested"),
+    );
+
+  setActiveTab("tabMain");
+
   document.getElementById("addIncludeBtn").addEventListener("click", () => {
     addPhrase({ host, kind: "include" });
   });
@@ -182,6 +222,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("excludeInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") addPhrase({ host, kind: "exclude" });
   });
+
+  const addIncludeBtnTab = document.getElementById("addIncludeBtnTab");
+  if (addIncludeBtnTab) {
+    addIncludeBtnTab.addEventListener("click", () => {
+      addPhrase({ host, kind: "include", inputIdOverride: "includeInputTab" });
+    });
+  }
+
+  const addExcludeBtnTab = document.getElementById("addExcludeBtnTab");
+  if (addExcludeBtnTab) {
+    addExcludeBtnTab.addEventListener("click", () => {
+      addPhrase({ host, kind: "exclude", inputIdOverride: "excludeInputTab" });
+    });
+  }
+
+  const includeInputTab = document.getElementById("includeInputTab");
+  if (includeInputTab) {
+    includeInputTab.addEventListener("keydown", (e) => {
+      if (e.key === "Enter")
+        addPhrase({ host, kind: "include", inputIdOverride: "includeInputTab" });
+    });
+  }
+
+  const excludeInputTab = document.getElementById("excludeInputTab");
+  if (excludeInputTab) {
+    excludeInputTab.addEventListener("keydown", (e) => {
+      if (e.key === "Enter")
+        addPhrase({ host, kind: "exclude", inputIdOverride: "excludeInputTab" });
+    });
+  }
 
   document.getElementById("resetSiteBtn").addEventListener("click", () => {
     resetSite({ host });
