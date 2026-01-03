@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Phrase Filter (Scaffold)",
+  "name": "Phrase Filter",
   "version": "0.1.0",
-  "description": "Per-site phrase lists to filter/highlight listing cards (scaffold).",
+  "description": "Per-site phrase lists to filter/highlight listing cards.",
   "permissions": [
     "storage",
     "tabs"
