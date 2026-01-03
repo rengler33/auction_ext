@@ -126,12 +126,12 @@ async function refreshUI(host) {
     },
   });
 
-  const includeCount = (siteRules.includePhrases || []).length;
-  const excludeCount = (siteRules.excludePhrases || []).length;
-  if (host)
-    setStatus(
-      `Saved for ${host}: ${includeCount} include, ${excludeCount} exclude`,
-    );
+  // const includeCount = (siteRules.includePhrases || []).length;
+  // const excludeCount = (siteRules.excludePhrases || []).length;
+  // if (host)
+  //   setStatus(
+  //     `Saved for ${host}: ${includeCount} include, ${excludeCount} exclude`,
+  //   );
 }
 
 async function addPhrase({ host, kind, inputIdOverride }) {

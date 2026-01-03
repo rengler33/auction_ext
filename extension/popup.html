@@ -109,6 +109,12 @@
         align-items: center;
       }
 
+      .divider {
+        height: 2px;
+        background: rgba(17, 24, 39, 0.12);
+        margin: 10px 0;
+      }
+
       input[type="text"] {
         flex: 1;
         padding: 8px 10px;
@@ -283,9 +289,10 @@
             </button>
           </div>
 
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
           <ul id="includeList"></ul>
           <div class="meta" style="margin-top: 8px">
-            Add/remove phrases from the interested list for the current site.
           </div>
         </div>
       </section>
@@ -310,9 +317,10 @@
             </button>
           </div>
 
+          <div class="divider" role="separator" aria-hidden="true"></div>
+
           <ul id="excludeList"></ul>
           <div class="meta" style="margin-top: 8px">
-            Add/remove phrases from the not interested list for the current site.
           </div>
         </div>
       </section>
