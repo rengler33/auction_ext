@@ -1,10 +1,30 @@
 :root {
+    /* Base */
     --bg: #ffffff;
     --fg: #111827;
     --muted: #6b7280;
     --border: #e5e7eb;
+
+    /* Theme */
     --accent: #2563eb;
-    --danger: #dc2626;
+
+    /* Interested (gold) */
+    --interested: #b45309;
+    --interested-bg: rgba(245, 158, 11, 0.14);
+    --interested-border: rgba(245, 158, 11, 0.35);
+    --interested-ring: rgba(245, 158, 11, 0.25);
+
+    /* Not interested (blue) */
+    --not-interested: #1d4ed8;
+    --not-interested-bg: rgba(37, 99, 235, 0.10);
+    --not-interested-border: rgba(37, 99, 235, 0.30);
+    --not-interested-ring: rgba(37, 99, 235, 0.22);
+
+    /* Destructive (dangerous actions) */
+    --danger: #b91c1c;
+    --danger-bg: rgba(220, 38, 38, 0.10);
+    --danger-border: rgba(220, 38, 38, 0.30);
+    --danger-ring: rgba(220, 38, 38, 0.22);
 }
 
 body {
@@ -72,6 +92,21 @@ h1 {
     box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
 }
 
+/* Tab theming by meaning */
+#tabInterested[aria-selected="true"] {
+    border-color: var(--interested-border);
+    box-shadow:
+        0 1px 0 rgba(17, 24, 39, 0.04),
+        0 0 0 3px var(--interested-ring);
+}
+
+#tabNotInterested[aria-selected="true"] {
+    border-color: var(--not-interested-border);
+    box-shadow:
+        0 1px 0 rgba(17, 24, 39, 0.04),
+        0 0 0 3px var(--not-interested-ring);
+}
+
 .tabpanels {
     display: block;
 }
@@ -85,6 +120,17 @@ h1 {
     border-radius: 10px;
     padding: 10px;
     margin-bottom: 10px;
+}
+
+/* Card theming by meaning */
+#panelMain>.card:nth-of-type(1),
+#panelInterested .card {
+    border-color: var(--interested-border);
+}
+
+#panelMain>.card:nth-of-type(2),
+#panelNotInterested .card {
+    border-color: var(--not-interested-border);
 }
 
 h2 {
@@ -118,6 +164,19 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+/* Focus rings that match intent */
+#includeInput:focus,
+#includeInputTab:focus {
+    border-color: var(--interested);
+    box-shadow: 0 0 0 3px var(--interested-ring);
+}
+
+#excludeInput:focus,
+#excludeInputTab:focus {
+    border-color: var(--not-interested);
+    box-shadow: 0 0 0 3px var(--not-interested-ring);
+}
+
 button {
     padding: 8px 10px;
     border: 1px solid var(--border);
@@ -133,10 +192,49 @@ button.primary {
     background: rgba(37, 99, 235, 0.08);
 }
 
+/* Primary buttons should reflect meaning */
+#addIncludeBtn.primary,
+#addIncludeBtnTab.primary {
+    border-color: var(--interested-border);
+    background: var(--interested-bg);
+    color: var(--interested);
+}
+
+#addExcludeBtn.primary,
+#addExcludeBtnTab.primary {
+    border-color: var(--not-interested-border);
+    background: var(--not-interested-bg);
+    color: var(--not-interested);
+}
+
+/* Hover/active polish */
+#addIncludeBtn.primary:hover,
+#addIncludeBtnTab.primary:hover {
+    background: rgba(245, 158, 11, 0.20);
+}
+
+#addExcludeBtn.primary:hover,
+#addExcludeBtnTab.primary:hover {
+    background: rgba(37, 99, 235, 0.14);
+}
+
 button.danger {
-    border-color: rgba(220, 38, 38, 0.25);
-    background: rgba(220, 38, 38, 0.08);
+    border-color: var(--danger-border);
+    background: var(--danger-bg);
     color: var(--danger);
+}
+
+button.danger:hover {
+    background: rgba(220, 38, 38, 0.14);
+    border-color: rgba(220, 38, 38, 0.38);
+}
+
+button.danger:focus {
+    outline: none;
+}
+
+button.danger:focus-visible {
+    box-shadow: 0 0 0 3px var(--danger-ring);
 }
 
 ul {
