@@ -2,7 +2,7 @@
 // Loads per-host rules from chrome.storage.sync and stays in sync as they change.
 // Applies include/exclude phrase filtering based on selector:
 // - include phrase match => highlight the card
-// - exclude phrase match => hide the card entirely
+// - exclude phrase match => apply a blue overlay (dim) the card (still clickable)
 //
 // Item card selection is hard-coded per host (no user-provided selectors).
 
@@ -156,6 +156,21 @@ function injectHighlightCssOnce() {
       outline-offset: 2px !important;
       box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25) !important;
     }
+
+    /* Excluded cards: blue overlay, but keep content legible and clickable. */
+    [${HIDDEN_ATTR}="1"] {
+      position: relative !important;
+    }
+
+    [${HIDDEN_ATTR}="1"]::after {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background: rgba(29, 78, 216, 0.75) !important;
+      box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.45) !important;
+      pointer-events: none !important;
+      border-radius: inherit !important;
+    }
   `.trim();
   document.head.appendChild(style);
 }
@@ -185,14 +200,12 @@ function getTitleTextFromCard(card) {
 }
 
 function setHidden(card, shouldHide) {
+  // We no longer hide cards; we mark them as excluded so CSS can overlay them.
+  // Overlay uses pointer-events: none so the card remains clickable.
   if (shouldHide) {
-    card.style.display = "none";
     card.setAttribute(HIDDEN_ATTR, "1");
   } else {
-    if (card.getAttribute(HIDDEN_ATTR) === "1") {
-      card.style.display = "";
-      card.removeAttribute(HIDDEN_ATTR);
-    }
+    card.removeAttribute(HIDDEN_ATTR);
   }
 }
 

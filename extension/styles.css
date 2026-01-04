@@ -4,9 +4,7 @@
   Note: The actual logic for applying these classes will be implemented later.
 */
 
-.phrase-filter-hidden {
-    display: none !important;
-}
+/* .phrase-filter-hidden removed: excluded items should remain visible with an overlay. */
 
 .phrase-filter-highlight {
     outline: 3px solid #ffcc00 !important;
