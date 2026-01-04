@@ -52,8 +52,7 @@ Then:
 
 - **Current behavior:** The content script only logs loaded rules (open DevTools → Console on the page to see `[PhraseFilter]` logs). No DOM modifications happen yet.
 
-## Next step (when you’re ready)
+## Next step when adding compatability with a new site
 
-Once we inspect BidFTA’s listing card DOM:
 - Set a stable per-site `itemSelector`
 - Implement scanning + matching + applying `.phrase-filter-hidden` / `.phrase-filter-highlight` classes

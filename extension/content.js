@@ -1,6 +1,6 @@
 // Content script.
 // Loads per-host rules from chrome.storage.sync and stays in sync as they change.
-// Applies include/exclude phrase filtering based on each item's <h4> text:
+// Applies include/exclude phrase filtering based on selector:
 // - include phrase match => highlight the card
 // - exclude phrase match => hide the card entirely
 //
@@ -26,12 +26,8 @@ const ITEM_SELECTOR_BY_DOMAIN = {
     'div[role="button"][aria-label="Click to navigate to item details"]',
 
   // GovDeals: listing card root is a Bootstrap-ish card used in search results.
-  // Your provided sample outer element: <div class="card card-search card-search-minh ...">...</div>
   "govdeals.com": "div.card.card-search",
 };
-
-const DEFAULT_ITEM_SELECTOR =
-  'div[role="button"][aria-label="Click to navigate to item details"]';
 
 /**
  * Hard-coded per-host title selectors.
@@ -43,7 +39,7 @@ const TITLE_SELECTOR_BY_DOMAIN = {
   "bidfta.com": "h4",
 
   // GovDeals: title is inside <p class=\"card-title\"><a ...>Title</a></p>.
-  "govdeals.com": ".card-title a, .card-title",
+  "govdeals.com": ".card-title a",
 };
 
 /**
@@ -81,7 +77,6 @@ function hostMatchesDomain(host, domain) {
 
 /**
  * Get the hard-coded item selector for a host (supports subdomains).
- * Falls back to DEFAULT_ITEM_SELECTOR if no mapping exists or the mapping is blank.
  * @param {string} host
  */
 function getItemSelectorForHost(host) {
@@ -91,7 +86,7 @@ function getItemSelectorForHost(host) {
     if (trimmed) return trimmed;
     break;
   }
-  return DEFAULT_ITEM_SELECTOR;
+  // NOTE: return not handled if selector not found
 }
 
 /**
@@ -167,7 +162,6 @@ function injectHighlightCssOnce() {
 
 /**
  * Attempt to find the title element inside a card for the current host.
- * This is strict-by-host (no cross-site fallback).
  * @param {string} host
  * @param {Element} card
  * @returns {HTMLElement|null}
@@ -185,8 +179,9 @@ function findTitleElementForHost(host, card) {
 function getTitleTextFromCard(card) {
   const titleEl = findTitleElementForHost(currentHost, card);
   if (!titleEl) return "";
-  // Prefer visible text; fall back to title attribute.
-  return (titleEl.textContent || titleEl.getAttribute("title") || "").trim();
+  // Prefer element title; fall back to visible text (sometimes visible text is shortened).
+  // NOTE: this may eventually need to be more customizeable for a given host
+  return (titleEl.getAttribute("title") || titleEl.textContent || "").trim();
 }
 
 function setHidden(card, shouldHide) {
