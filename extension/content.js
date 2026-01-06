@@ -218,6 +218,57 @@ function setHighlighted(card, shouldHighlight) {
 }
 
 /**
+ * Calculate true total cost for a bid including buyer's premium, freight, and sales tax.
+ * @param {number} bidAmount - The bid amount in dollars
+ * @returns {number} Total cost after all fees and taxes
+ */
+function calculateTrueBidTotal(bidAmount) {
+  // Add 17.5% buyer's premium
+  const afterPremium = bidAmount * 1.175;
+
+  // Add freight charge: $0.25 if $5 or less, otherwise $1
+  const freightCharge = bidAmount <= 5 ? 0.25 : 1.00;
+  const subtotal = afterPremium + freightCharge;
+
+  // Apply 9.5% sales tax
+  const total = subtotal * 1.095;
+
+  return total;
+}
+
+/**
+ * Enhance bid buttons on BidFTA by adding true total cost in parentheses.
+ * @param {Element} button
+ */
+function enhanceBidButton(button) {
+  // Skip if already enhanced
+  if (button.hasAttribute('data-phrasefilter-enhanced')) return;
+
+  const bidAmount = parseFloat(button.getAttribute('data-bid'));
+  if (isNaN(bidAmount)) return;
+
+  const trueTotal = calculateTrueBidTotal(bidAmount);
+  const originalText = button.textContent.trim();
+
+  // Add true total in parentheses
+  button.textContent = `${originalText} ($${trueTotal.toFixed(2)} total)`;
+  button.setAttribute('data-phrasefilter-enhanced', '1');
+}
+
+/**
+ * Find and enhance all bid buttons on the page (BidFTA only).
+ */
+function enhanceBidButtons() {
+  // Only run on BidFTA
+  if (!hostMatchesDomain(currentHost, 'bidfta.com')) return;
+
+  const bidButtons = document.querySelectorAll('button[data-bid]');
+  for (const button of bidButtons) {
+    enhanceBidButton(button);
+  }
+}
+
+/**
  * Apply include/exclude rules to a single card.
  * Exclude wins over include (hide beats highlight).
  * @param {Element} card
@@ -258,6 +309,9 @@ function applyRulesToPage(rules) {
 
   const cards = Array.from(document.querySelectorAll(effectiveSelector));
   for (const card of cards) applyRulesToCard(card, rules);
+
+  // Also enhance bid buttons
+  enhanceBidButtons();
 
   log("Applied rules", {
     host: currentHost,
