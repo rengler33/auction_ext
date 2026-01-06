@@ -237,7 +237,7 @@ function calculateTrueBidTotal(bidAmount) {
 }
 
 /**
- * Enhance bid buttons on BidFTA by adding true total cost in parentheses.
+ * Enhance bid buttons on BidFTA by adding true total cost in a new element after the button.
  * @param {Element} button
  */
 function enhanceBidButton(button) {
@@ -248,10 +248,15 @@ function enhanceBidButton(button) {
   if (isNaN(bidAmount)) return;
 
   const trueTotal = calculateTrueBidTotal(bidAmount);
-  const originalText = button.textContent.trim();
 
-  // Add true total in parentheses
-  button.textContent = `${originalText} ($${trueTotal.toFixed(2)} total)`;
+  // Create a new element to display the total
+  const totalDisplay = document.createElement('span');
+  totalDisplay.className = 'phrasefilter-bid-total';
+  totalDisplay.textContent = `Total: $${trueTotal.toFixed(2)}`;
+  totalDisplay.style.cssText = 'margin-left: 8px; font-weight: 600; color: #059669;';
+
+  // Insert the total display after the button
+  button.parentNode.insertBefore(totalDisplay, button.nextSibling);
   button.setAttribute('data-phrasefilter-enhanced', '1');
 }
 
@@ -280,18 +285,19 @@ function parseDollarAmount(value) {
 }
 
 /**
- * Update max bid button text with true total based on input value.
+ * Update max bid total display based on input value.
  * @param {HTMLInputElement} input
- * @param {HTMLButtonElement} button
+ * @param {HTMLElement} totalDisplay
  */
-function updateMaxBidButtonTotal(input, button) {
+function updateMaxBidButtonTotal(input, totalDisplay) {
   const bidAmount = parseDollarAmount(input.value);
 
   if (bidAmount > 0) {
     const trueTotal = calculateTrueBidTotal(bidAmount);
-    button.textContent = `Set Max Bid ($${trueTotal.toFixed(2)} total)`;
+    totalDisplay.textContent = `Total: $${trueTotal.toFixed(2)}`;
+    totalDisplay.style.display = '';
   } else {
-    button.textContent = 'Set Max Bid';
+    totalDisplay.style.display = 'none';
   }
 }
 
@@ -310,13 +316,21 @@ function enhanceMaxBidButton(button) {
   const input = container.querySelector('input[type="text"][placeholder*="$"]');
   if (!input) return;
 
-  // Add input event listener to update button text in real-time
-  const updateHandler = () => updateMaxBidButtonTotal(input, button);
+  // Create a new element to display the total
+  const totalDisplay = document.createElement('span');
+  totalDisplay.className = 'phrasefilter-maxbid-total';
+  totalDisplay.style.cssText = 'margin-left: 8px; font-weight: 600; color: #059669; display: none;';
+
+  // Insert the total display after the button
+  button.parentNode.insertBefore(totalDisplay, button.nextSibling);
+
+  // Add input event listener to update total display in real-time
+  const updateHandler = () => updateMaxBidButtonTotal(input, totalDisplay);
   input.addEventListener('input', updateHandler);
   input.addEventListener('change', updateHandler);
 
   // Initial update
-  updateMaxBidButtonTotal(input, button);
+  updateMaxBidButtonTotal(input, totalDisplay);
 
   button.setAttribute('data-phrasefilter-maxbid-enhanced', '1');
 }
