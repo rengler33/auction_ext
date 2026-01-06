@@ -269,6 +269,76 @@ function enhanceBidButtons() {
 }
 
 /**
+ * Parse dollar amount from input value (handles "$13.50" format).
+ * @param {string} value
+ * @returns {number}
+ */
+function parseDollarAmount(value) {
+  const cleaned = (value || '').replace(/[$,\s]/g, '');
+  const amount = parseFloat(cleaned);
+  return isNaN(amount) ? 0 : amount;
+}
+
+/**
+ * Update max bid button text with true total based on input value.
+ * @param {HTMLInputElement} input
+ * @param {HTMLButtonElement} button
+ */
+function updateMaxBidButtonTotal(input, button) {
+  const bidAmount = parseDollarAmount(input.value);
+
+  if (bidAmount > 0) {
+    const trueTotal = calculateTrueBidTotal(bidAmount);
+    button.textContent = `Set Max Bid ($${trueTotal.toFixed(2)} total)`;
+  } else {
+    button.textContent = 'Set Max Bid';
+  }
+}
+
+/**
+ * Enhance max bid button and its associated input field.
+ * @param {HTMLButtonElement} button
+ */
+function enhanceMaxBidButton(button) {
+  // Skip if already enhanced
+  if (button.hasAttribute('data-phrasefilter-maxbid-enhanced')) return;
+
+  // Find the associated input field (should be a sibling or nearby in DOM)
+  const container = button.closest('div');
+  if (!container) return;
+
+  const input = container.querySelector('input[type="text"][placeholder*="$"]');
+  if (!input) return;
+
+  // Add input event listener to update button text in real-time
+  const updateHandler = () => updateMaxBidButtonTotal(input, button);
+  input.addEventListener('input', updateHandler);
+  input.addEventListener('change', updateHandler);
+
+  // Initial update
+  updateMaxBidButtonTotal(input, button);
+
+  button.setAttribute('data-phrasefilter-maxbid-enhanced', '1');
+}
+
+/**
+ * Find and enhance all max bid buttons on the page (BidFTA only).
+ */
+function enhanceMaxBidButtons() {
+  // Only run on BidFTA
+  if (!hostMatchesDomain(currentHost, 'bidfta.com')) return;
+
+  // Find "Set Max Bid" buttons by their distinctive styling
+  const maxBidButtons = document.querySelectorAll('button.bg-bidfta-yellow-light');
+  for (const button of maxBidButtons) {
+    // Verify it's actually a max bid button by checking text content
+    if (button.textContent.trim().includes('Set Max Bid')) {
+      enhanceMaxBidButton(button);
+    }
+  }
+}
+
+/**
  * Apply include/exclude rules to a single card.
  * Exclude wins over include (hide beats highlight).
  * @param {Element} card
@@ -312,6 +382,7 @@ function applyRulesToPage(rules) {
 
   // Also enhance bid buttons
   enhanceBidButtons();
+  enhanceMaxBidButtons();
 
   log("Applied rules", {
     host: currentHost,
